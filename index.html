@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Jack Estate</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Jack Estate">
+<meta name="theme-color" content="#C2714F">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:ital,wght@0,700;0,900;1,700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#F5EFE6;--card:#FFFAF4;--card2:#F2EAE0;--border:#D9CCBC;
+  --accent:#C2714F;--accent2:#7A9E7E;--accent3:#D4A853;
+  --text:#2E1F14;--sub:#7A6355;--sub2:#B09A8A;--r:14px;--r2:10px;
+}
+body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;}
+.wrap{max-width:820px;margin:0 auto;padding:0 16px 60px;}
+.header{padding:32px 0 20px;text-align:center;}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 16px;border-radius:99px;border:1.5px solid var(--border);background:var(--card);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sub);margin-bottom:16px;}
+.dot{width:7px;height:7px;border-radius:50%;background:#ccc;display:inline-block;flex-shrink:0;}
+.dot.green{background:var(--accent2);animation:pulse 2s infinite;}
+.dot.red{background:#e53935;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-family:'Fraunces',serif;font-size:clamp(28px,6vw,48px);font-weight:900;line-height:1.05;letter-spacing:-.02em;}
+h1 em{font-style:italic;color:var(--accent);}
+.header-sub{color:var(--sub);font-size:13px;margin-top:8px;}
+.f-badges{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:14px;}
+.nav{display:flex;gap:4px;padding:0 0 20px;overflow-x:auto;}
+.nav::-webkit-scrollbar{display:none;}
+.ntab{flex-shrink:0;padding:9px 16px;border-radius:99px;border:1.5px solid var(--border);background:var(--card);color:var(--sub);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+.ntab.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+.card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;}
+.card-warn{border-left:3px solid var(--accent3);background:#FFF8EC;}
+.card-ok{border-left:3px solid var(--accent2);background:#F2F8F3;}
+.card-hi{border-color:var(--accent);}
+.card-dash{border:2px dashed var(--border);background:transparent;}
+.card-empty{text-align:center;color:var(--sub2);padding:24px;font-size:13px;}
+.sec-title{font-family:'Fraunces',serif;font-size:21px;font-weight:900;margin:26px 0 4px;}
+.sec-sub{font-size:12px;color:var(--sub);margin-bottom:12px;}
+.grp-lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--sub);margin:16px 0 8px;padding:5px 10px;background:var(--card2);border-radius:8px;display:inline-block;}
+input,select,textarea{padding:9px 12px;border-radius:var(--r2);border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+textarea{resize:vertical;min-height:56px;}
+.lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);margin-bottom:5px;display:block;}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.col{display:flex;flex-direction:column;gap:10px;}
+.btwn{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.btn{padding:9px 20px;border-radius:99px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
+.xbtn{background:none;border:none;color:var(--sub2);font-size:18px;cursor:pointer;padding:2px 6px;line-height:1;}
+.toggles{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.tog{padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:1.5px solid var(--border);background:var(--card2);color:var(--sub);}
+.tog.on{color:#fff!important;border-color:transparent;}
+.tog.sm{padding:3px 9px;font-size:11px;}
+.filt{padding:6px 13px;border-radius:99px;border:1.5px solid var(--border);background:var(--card);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;color:var(--sub);}
+.filt.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+.sug{display:inline-flex;flex-direction:column;gap:3px;padding:8px 11px;border-radius:var(--r2);background:var(--card2);border:1.5px solid var(--border);font-size:12px;}
+.dbtn{font-size:10px;padding:2px 7px;border-radius:99px;border:1.5px solid var(--border);background:var(--card);color:var(--sub);cursor:pointer;font-family:'Inter',sans-serif;}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:10px;}
+.bcard{background:var(--card2);border-radius:var(--r2);padding:10px 12px;border:1.5px solid var(--border);}
+.bamt{font-family:'Fraunces',serif;font-size:17px;font-weight:900;margin-top:3px;}
+.green{color:#4a8a50;}.red{color:#b04030;}.gray{color:var(--sub);}
+.bigtotal{font-family:'Fraunces',serif;font-size:26px;font-weight:900;}
+.eamt{font-family:'Fraunces',serif;font-size:20px;font-weight:900;}
+.sbadge{display:inline-flex;align-items:center;padding:4px 12px;border-radius:99px;font-size:11px;font-weight:800;}
+.sc{background:#005DAA;color:#fff;}.ss{background:#CC2128;color:#fff;}
+.gitem{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1.5px solid var(--border);}
+.gitem:last-child{border-bottom:none;}
+.gcheck{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border);cursor:pointer;appearance:none;flex-shrink:0;position:relative;}
+.gcheck:checked{background:var(--accent2);border-color:var(--accent2);}
+.gcheck:checked::after{content:'checkmark';font-size:0;position:absolute;top:0;left:0;right:0;bottom:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l3 3 5-5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") center/10px no-repeat;}
+.struck{text-decoration:line-through;color:var(--sub2);}
+.overlay{position:fixed;inset:0;background:rgba(46,31,20,.5);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;}
+.modal{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:28px;max-width:480px;width:100%;max-height:80vh;overflow-y:auto;}
+.hidden{display:none;}
+.pay-wrap{display:flex;justify-content:center;padding-bottom:14px;}
+.pay-btn{padding:8px 18px;border-radius:99px;border:1.5px solid var(--border);background:var(--card);color:var(--sub);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+.ensuite-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:#e8f5e9;color:#4a7a50;margin-left:6px;vertical-align:middle;}
+.diet-chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;border:1.5px solid var(--border);color:var(--sub);}
+.diet-chip.vg{border-color:#7A9E7E;color:#4a7a50;}
+.diet-chip.vn{border-color:#8BC34A;color:#5a7a20;}
+.diet-chip.gf{border-color:#D4A853;color:#9a7020;}
+.diet-chip.df{border-color:#6BAED6;color:#2a6090;}
+.diet-chip.nt{border-color:#C2714F;color:#a04030;}
+.diet-chip.hl{border-color:#9C6BAD;color:#7040a0;}
+.diet-chip.ko{border-color:#8C6A5D;color:#6a4a40;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="pill"><span class="dot" id="syncDot"></span><span id="syncTxt">Connecting...</span></div>
+    <h1>Trip <em>Planner</em></h1>
+    <div class="header-sub">The Jack Estate · Thousand Palms · 11 bedrooms · Pool · Pickleball · Sauna</div>
+    <div class="f-badges" id="hbadges"></div>
+  </div>
+  <div class="nav" id="nav"></div>
+  <div class="pay-wrap"><button class="pay-btn" onclick="showModal()">💳 Payment Info</button></div>
+  <div id="content"><p style="text-align:center;padding:48px;color:var(--sub)">Loading...</p></div>
+</div>
+<div class="overlay hidden" id="modal-bg" onclick="hideModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="btwn" style="margin-bottom:20px">
+      <div style="font-family:Fraunces,serif;font-size:20px;font-weight:900">Payment Info</div>
+      <button class="xbtn" onclick="hideModal()">x</button>
+    </div>
+    <div id="payfields"></div>
+    <button class="btn" style="width:100%;padding:12px;margin-top:8px" onclick="hideModal()">Done</button>
+  </div>
+</div>
+<script>
+// Firebase config
+firebase.initializeApp({
+  apiKey:"AIzaSyAw4kcsxY40yW1zkJRmaxSD5wMHFbkLIgA",
+  authDomain:"palm-springs-2025.firebaseapp.com",
+  databaseURL:"https://palm-springs-2025-default-rtdb.firebaseio.com",
+  projectId:"palm-springs-2025",
+  storageBucket:"palm-springs-2025.appspot.com",
+  messagingSenderId:"1022663997740",
+  appId:"1:1022663997740:web:aa837a638d2289b9671489"
+});
+var db = firebase.database().ref("jackEstate3");
+
+// Constants
+var F = [“Tsakiri”,“Caruso”,“Davis”,“Burke”,“Priolli-Grillet”,“Collins”];
+var CO = [”#C2714F”,”#7A9E7E”,”#D4A853”,”#8C6A5D”,”#A0845C”,”#B07A6E”];
+var FSIZE = {Tsakiri:3,Caruso:3,Davis:5,Burke:2,“Priolli-Grillet”:4,Collins:2};
+var FTOTAL = 19;
+var DAYS = [“Day 1”,“Day 2”,“Day 3”,“Day 4”];
+var MLIST = [“Breakfast”,“Lunch”,“Dinner”];
+var DIETS = [
+{k:“vg”,l:“Vegetarian”},{k:“vn”,l:“Vegan”},{k:“gf”,l:“Gluten-Free”},
+{k:“df”,l:“Dairy-Free”},{k:“nt”,l:“Nut Allergy”},{k:“hl”,l:“Halal”},{k:“ko”,l:“Kosher”}
+];
+var DL = {vg:“Vegetarian”,vn:“Vegan”,gf:“Gluten-Free”,df:“Dairy-Free”,nt:“Nut Allergy”,hl:“Halal”,ko:“Kosher”};
+var ON = [
+{n:“Pool & Hot Tub”,d:“Flexible”},{n:“Pickleball Tournament”,d:“1-2 hrs”},
+{n:“Game Room”,d:“Flexible”},{n:“Golf Simulator”,d:“1-2 hrs”},
+{n:“Beach Volleyball”,d:“1 hr”},{n:“Sauna Session”,d:“30-60 min”},
+{n:“Basketball”,d:“1 hr”},{n:“Bocce & Cornhole”,d:“1 hr”},
+{n:“Movie Night”,d:“Evening”},{n:“Fire Pit & S’mores”,d:“Evening”},
+{n:“BBQ Cookout”,d:“Afternoon”},{n:“Margarita Happy Hour”,d:“1-2 hrs”}
+];
+var OFF = [
+{n:“Joshua Tree NP”,d:“Full day”},{n:“PS Aerial Tramway”,d:“Half day”},
+{n:“Indian Canyons Hike”,d:“Half day”},{n:“PS Art Museum”,d:“2-3 hrs”},
+{n:“El Paseo Shopping”,d:“2-3 hrs”},{n:“Cabazon Dinosaurs”,d:“Half day”},
+{n:“Sunnylands Gardens”,d:“2-3 hrs”},{n:“Living Desert Zoo”,d:“Half day”}
+];
+var DEFAULT_ROOMS = [
+{n:“Bedroom 1 (Master)”,b:“1 King + 1 Sofa Bed”,bath:true,loc:“main”,f:[]},
+{n:“Bedroom 2”,b:“1 King”,bath:false,loc:“main”,f:[]},
+{n:“Bedroom 3”,b:“1 Queen”,bath:true,loc:“main”,f:[]},
+{n:“Bedroom 4”,b:“1 King”,bath:true,loc:“main”,f:[]},
+{n:“Bedroom 5”,b:“1 King”,bath:true,loc:“main”,f:[]},
+{n:“Bedroom 6”,b:“1 King + 2 Singles”,bath:false,loc:“main”,f:[]},
+{n:“Bedroom 7”,b:“1 King + 2 Singles”,bath:false,loc:“main”,f:[]},
+{n:“Bedroom 8”,b:“1 King”,bath:false,loc:“casita-up”,f:[]},
+{n:“Bedroom 9”,b:“2 Queens”,bath:false,loc:“casita-up”,f:[]},
+{n:“Bedroom 10”,b:“2 Singles”,bath:false,loc:“casita-dn”,f:[]},
+{n:“Bedroom 11”,b:“1 King + 4 Singles”,bath:false,loc:“casita-dn”,f:[]}
+];
+
+// State
+var tab = “rooms”, actFilt = “all”;
+var newExpSplit = F.slice(), newExpPP = true;
+var S = null;
+
+function blankState() {
+var meals = {}, dietR = {}, acts = {};
+DAYS.forEach(function(d) {
+meals[d] = {};
+MLIST.forEach(function(m) { meals[d][m] = {chefs:[],menu:””,notes:””,groc:””}; });
+});
+F.forEach(function(f) { dietR[f] = []; });
+DAYS.forEach(function(d,i) { acts[i] = {day:d,items:[]}; });
+return {rooms:DEFAULT_ROOMS,meals:meals,dietR:dietR,acts:acts,exps:[],grocItems:[],pay:{}};
+}
+
+function save() {
+db.set(S);
+}
+
+// Firebase listener
+db.on(“value”, function(snap) {
+var data = snap.val();
+S = data ? fixState(data) : blankState();
+if (!data) save();
+document.getElementById(“syncDot”).className = “dot green”;
+document.getElementById(“syncTxt”).textContent = “Live - syncs for all families”;
+render();
+}, function(err) {
+document.getElementById(“syncDot”).className = “dot red”;
+document.getElementById(“syncTxt”).textContent = “Error: “ + err.message;
+});
+
+function fixState(d) {
+if (!d.rooms || !Array.isArray(d.rooms)) d.rooms = DEFAULT_ROOMS;
+d.rooms.forEach(function(r) {
+if (!Array.isArray(r.f)) r.f = [];
+if (r.bath === undefined) r.bath = false;
+if (!r.loc) r.loc = “main”;
+});
+if (!d.meals) d.meals = {};
+DAYS.forEach(function(dy) {
+if (!d.meals[dy]) d.meals[dy] = {};
+MLIST.forEach(function(m) {
+if (!d.meals[dy][m]) d.meals[dy][m] = {chefs:[],menu:””,notes:””,groc:””};
+if (!Array.isArray(d.meals[dy][m].chefs)) d.meals[dy][m].chefs = [];
+});
+});
+if (!d.dietR) d.dietR = {};
+F.forEach(function(f) { if (!Array.isArray(d.dietR[f])) d.dietR[f] = []; });
+if (!d.acts) d.acts = {};
+DAYS.forEach(function(dy,i) {
+if (!d.acts[i]) d.acts[i] = {day:dy,items:[]};
+if (!Array.isArray(d.acts[i].items)) d.acts[i].items = [];
+d.acts[i].items.forEach(function(a) { if (!Array.isArray(a.v)) a.v = []; });
+});
+if (!Array.isArray(d.exps)) d.exps = [];
+if (!Array.isArray(d.grocItems)) d.grocItems = [];
+if (!d.pay) d.pay = {};
+return d;
+}
+
+// Helpers
+function esc(s) { return (s||””).replace(/&/g,”&”).replace(/</g,”<”).replace(/>/g,”>”).replace(/”/g,”"”); }
+
+function badge(name, sm) {
+var i = F.indexOf(name), sz = FSIZE[name];
+var p = sm ? “2px 8px” : “5px 13px”, fs = sm ? “11px” : “12px”;
+return ‘<span style="display:inline-flex;align-items:center;gap:5px;padding:'+p+';border-radius:99px;font-size:'+fs+';font-weight:700;background:'+CO[i]+'20;border:1.5px solid '+CO[i]+'60;color:'+CO[i]+'">’+name+’<span style="background:'+CO[i]+';color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:800">’+sz+’ ppl</span></span>’;
+}
+
+function togBtns(sel, fn, sm) {
+return ‘<div class="toggles">’+F.map(function(f,i) {
+var on = sel.indexOf(f) >= 0;
+var style = on ? ‘background:’+CO[i]+’;border-color:’+CO[i] : ‘’;
+return ‘<button class="tog '+(sm?'sm ':'')+( on?'on':'')+'" style="'+style+'" onclick="'+fn+'(\''+f+'\')">’+( on?’✓ ‘:’’)+f+’ <span style="opacity:.7;font-size:10px">’+FSIZE[f]+‘p</span></button>’;
+}).join(’’)+’</div>’;
+}
+
+function dietSum() {
+var out = {};
+F.forEach(function(f) {
+(S.dietR[f]||[]).forEach(function(d) { if (!out[d]) out[d]=[]; out[d].push(f); });
+});
+return out;
+}
+
+// Render
+function render() {
+if (!S) return;
+document.getElementById(“hbadges”).innerHTML = F.map(function(f){ return badge(f,false); }).join(””);
+document.getElementById(“nav”).innerHTML = [
+[“rooms”,“Rooms”],[“meals”,“Meals”],[“dietary”,“Dietary”],
+[“activities”,“Activities”],[“grocery”,“Grocery”],[“expenses”,“Expenses”]
+].map(function(x){ return ‘<button class="ntab '+(tab===x[0]?'on':'')+'" onclick="setTab(\''+x[0]+'\')">’+x[1]+’</button>’; }).join(””);
+
+var views = {rooms:vRooms,meals:vMeals,dietary:vDietary,activities:vActs,grocery:vGrocery,expenses:vExps};
+document.getElementById(“content”).innerHTML = (views[tab]||vRooms)();
+
+document.getElementById(“payfields”).innerHTML = F.map(function(f){
+return ‘<div style="margin-bottom:12px">’+badge(f,false)+’<br><input style="width:100%;margin-top:6px" placeholder="Venmo / Zelle / PayPal..." value="'+esc((S.pay||{})[f]||'')+'" onchange="S.pay[\''+f+'\']=this.value;save()"></div>’;
+}).join(””);
+}
+
+function setTab(t) { tab = t; render(); }
+function showModal() { document.getElementById(“modal-bg”).classList.remove(“hidden”); }
+function hideModal() { document.getElementById(“modal-bg”).classList.add(“hidden”); }
+
+// ROOMS
+function vRooms() {
+var asgn = {};
+S.rooms.forEach(function(r){ r.f.forEach(function(f){ asgn[f]=true; }); });
+var unas = F.filter(function(f){ return !asgn[f]; });
+var h = ‘<div class="sec-title">Room Assignments</div><div class="sec-sub">Tap families to assign — see beds, bathroom and building</div>’;
+h += unas.length
+? ‘<div class="card card-warn"><b style="color:#9a7020">Not yet assigned: </b>’+unas.map(function(f){return badge(f,true);}).join(’ ‘)+’</div>’
+: ‘<div class="card card-ok"><b style="color:#4a7a50">All 6 families assigned!</b></div>’;
+var locs = [{key:“main”,label:“Main House”,desc:“Bedrooms 1-7”},{key:“casita-up”,label:“Casita - Upstairs”,desc:“Bedrooms 8-9”},{key:“casita-dn”,label:“Casita - Downstairs”,desc:“Bedrooms 10-11”}];
+locs.forEach(function(loc) {
+var group = S.rooms.filter(function(r){ return r.loc === loc.key; });
+if (!group.length) return;
+h += ‘<div style="margin-top:16px;margin-bottom:8px"><span class="grp-lbl">’+loc.label+’</span> <span style="font-size:11px;color:var(--sub);margin-left:4px">’+loc.desc+’</span></div>’;
+group.forEach(function(r) {
+var ri = S.rooms.indexOf(r);
+var bathTxt = r.bath
+? ‘<span style="color:#4a7a50;font-weight:700">Private bathroom</span>’
+: ‘<span style="color:var(--sub)">Shared bathroom</span>’;
+var pill = r.bath ? ‘<span class="ensuite-pill">En-suite</span>’ : ‘’;
+h += ‘<div class="card" style="'+(r.bath?'border-left:3px solid #7A9E7E':'')+'">’;
+h += ‘<div class="btwn"><div>’;
+h += ‘<div style="font-weight:700;font-size:15px">’+r.n+pill+’</div>’;
+h += ‘<div style="font-size:13px;margin-top:4px;display:flex;gap:12px;flex-wrap:wrap"><span>Beds: ‘+r.b+’</span>’+bathTxt+’</div>’;
+h += ‘</div><button class="xbtn" onclick="rmRoom('+ri+')">x</button></div>’;
+if (r.f.length) h += ‘<div style="display:flex;gap:5px;flex-wrap:wrap;margin:8px 0 4px">’+r.f.map(function(f){return badge(f,false);}).join(’’)+’</div>’;
+h += togBtns(r.f, ‘togRoom.bind(null,’+ri+’)’);
+h += ‘</div>’;
+});
+});
+h += ‘<div class="card card-dash"><span class="lbl">+ Add room</span><div class="row" style="margin-top:10px"><input id="rn" placeholder="Room name" style="flex:1;min-width:130px"><input id="rb" placeholder="Beds" style="width:140px"><button class="btn" onclick="addRoom()">Add</button></div></div>’;
+return h;
+}
+function togRoom(ri, f) { var r=S.rooms[ri],x=r.f.indexOf(f); x>=0?r.f.splice(x,1):r.f.push(f); save(); render(); }
+function rmRoom(i) { S.rooms.splice(i,1); save(); render(); }
+function addRoom() { var n=document.getElementById(“rn”).value.trim(); if(!n)return; S.rooms.push({n:n,b:document.getElementById(“rb”).value.trim()||“TBD”,bath:false,loc:“main”,f:[]}); save(); render(); }
+
+// DIETARY
+function vDietary() {
+var ds = dietSum();
+var hasAny = Object.keys(ds).some(function(k){ return ds[k].length>0; });
+var h = ‘<div class="sec-title">Dietary Restrictions</div><div class="sec-sub">Set per family - reminders appear in Meals tab</div>’;
+if (hasAny) {
+h += ‘<div class="card card-hi"><div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:10px">Active Restrictions</div>’;
+Object.keys(ds).forEach(function(d) { if(ds[d].length) h += ‘<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="diet-chip '+d+'">’+DL[d]+’</span><span style="font-size:12px;color:var(--sub)">’+ds[d].join(’, ‘)+’</span></div>’; });
+h += ‘</div>’;
+}
+F.forEach(function(f,i) {
+var fd = S.dietR[f]||[];
+h += ‘<div class="card"><div class="btwn" style="margin-bottom:10px"><div style="font-weight:700;font-size:15px;color:'+CO[i]+'">’+f+’ <span style="font-weight:400;font-size:12px;color:var(--sub)">(’+FSIZE[f]+’ people)</span></div>’;
+h += ‘<div style="display:flex;gap:4px;flex-wrap:wrap">’+(fd.length?fd.map(function(d){return ‘<span class="diet-chip '+d+'">’+DL[d]+’</span>’;}).join(’’):’<span style="font-size:11px;color:var(--sub2)">No restrictions</span>’)+’</div></div>’;
+h += ‘<div style="display:flex;gap:5px;flex-wrap:wrap">’;
+DIETS.forEach(function(dt) { var on=fd.indexOf(dt.k)>=0; h += ‘<button class="tog sm '+(on?'on':'')+'" style="'+(on?'background:'+CO[i]+';border-color:'+CO[i]:'')+'" onclick="togDiet(\''+f+'\',\''+dt.k+'\')">’+( on?’✓ ‘:’’)+dt.l+’</button>’; });
+h += ‘</div></div>’;
+});
+return h;
+}
+function togDiet(f,d) { var ds=S.dietR[f],x=ds.indexOf(d); x>=0?ds.splice(x,1):ds.push(d); save(); render(); }
+
+// MEALS
+function vMeals() {
+var active = Object.keys(dietSum()).filter(function(k){ return dietSum()[k].length>0; });
+var h = ‘<div class="sec-title">Meal Planning</div><div class="sec-sub">Assign up to 3 families as chef crew per meal</div>’;
+if (active.length) {
+var ds2 = dietSum();
+h += ‘<div class="card card-warn"><b style="font-size:12px;color:#9a7020">Dietary restrictions to accommodate:</b><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">’;
+active.forEach(function(d){ h += ‘<span class="diet-chip '+d+'">’+DL[d]+’ - ‘+ds2[d].join(’, ‘)+’</span>’; });
+h += ‘</div></div>’;
+}
+DAYS.forEach(function(day) {
+h += ‘<div class="sec-title" style="font-size:18px">’+day+’</div>’;
+MLIST.forEach(function(meal) {
+if (day===DAYS[0] && meal===“Breakfast”) return;
+if (day===DAYS[3] && (meal===“Lunch”||meal===“Dinner”)) return;
+var m = S.meals[day][meal];
+var em = meal===“Breakfast”?“Breakfast”:meal===“Lunch”?“Lunch”:“Dinner”;
+h += ‘<div class="card"><div style="font-weight:700;font-size:15px;margin-bottom:12px">’+em+’</div><div class="col">’;
+h += ‘<div><span class="lbl">Chef crew (up to 3 families)</span>’+togBtns(m.chefs||[],‘togChef.bind(null,'’+day+’','’+meal+’')’)+(( m.chefs||[]).length?’<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px">’+(m.chefs||[]).map(function(f){return badge(f,true);}).join(’’)+’</div>’:’’)+’</div>’;
+h += ‘<div><span class="lbl">Menu</span><input style="width:100%" value="'+esc(m.menu)+'" placeholder="What\'s cooking?" onchange="S.meals[\''+day+'\'][\''+meal+'\'].menu=this.value;save()"></div>’;
+h += ‘<div><span class="lbl">Dietary notes</span><textarea style="width:100%" onchange="S.meals[\''+day+'\'][\''+meal+'\'].notes=this.value;save()">’+esc(m.notes)+’</textarea></div>’;
+h += ‘<div><span class="lbl">Groceries needed</span><input style="width:100%" value="'+esc(m.groc)+'" placeholder="Ingredients..." onchange="S.meals[\''+day+'\'][\''+meal+'\'].groc=this.value;save()"></div>’;
+h += ‘</div></div>’;
+});
+});
+return h;
+}
+function togChef(day,meal,f) { var chefs=S.meals[day][meal].chefs||[],x=chefs.indexOf(f); if(x>=0)chefs.splice(x,1); else if(chefs.length<3)chefs.push(f); S.meals[day][meal].chefs=chefs; save(); render(); }
+
+// ACTIVITIES
+function vActs() {
+var sg = actFilt===“onsite”?ON:actFilt===“offsite”?OFF:ON.concat(OFF);
+var h = ‘<div class="sec-title">Activities</div><div class="sec-sub">Vote with your family - tap a day to schedule</div>’;
+h += ‘<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px">’;
+[[“all”,“All”],[“onsite”,“On-Site”],[“offsite”,“Off-Site”]].forEach(function(x){ h += ‘<button class="filt '+(actFilt===x[0]?'on':'')+'" onclick="actFilt=\''+x[0]+'\';render()">’+x[1]+’</button>’; });
+h += ‘</div>’;
+h += ‘<div class="card"><div class="lbl" style="margin-bottom:10px">Suggestions</div><div style="display:flex;gap:8px;flex-wrap:wrap">’;
+sg.forEach(function(s,si) {
+h += ‘<div class="sug"><span>’+s.n+’</span><span style="font-size:11px;color:var(--sub)">’+s.d+’</span><div style="display:flex;gap:3px;margin-top:4px">’;
+DAYS.forEach(function(_,di){ h += ‘<button class="dbtn" onclick="addSug('+si+',\''+actFilt+'\','+di+')">D’+(di+1)+’</button>’; });
+h += ‘</div></div>’;
+});
+h += ‘</div></div>’;
+DAYS.forEach(function(day,di) {
+var da = S.acts[di];
+h += ‘<div class="sec-title" style="font-size:18px">’+day+’</div>’;
+if (!da||!da.items||!da.items.length) { h += ‘<div class="card card-empty">Nothing scheduled yet</div>’; return; }
+da.items.forEach(function(a,ai) {
+h += ‘<div class="card"><div class="btwn"><div><div style="font-weight:700;font-size:15px">’+a.n+’</div>’+(a.t?’<div style="font-size:12px;color:var(--sub);margin-top:2px">’+a.t+’</div>’:’’)+’</div><button class="xbtn" onclick="rmAct('+di+','+ai+')">x</button></div>’;
+h += ‘<div style="margin-top:10px"><span class="lbl">Who's in?</span>’+togBtns(a.v||[],‘togVote.bind(null,’+di+’,’+ai+’)’,true)+((a.v||[]).length?’<div style="font-size:11px;color:var(--sub);margin-top:5px">’+a.v.length+’/’+F.length+’ families in</div>’:’’)+’</div></div>’;
+});
+});
+h += ‘<div class="card card-dash"><span class="lbl">+ Custom activity</span><div class="row" style="margin-top:10px"><select id="ad" style="width:96px">’+DAYS.map(function(d,i){return ‘<option value="'+i+'">’+d+’</option>’;}).join(’’)+’</select><input id="an" placeholder="Activity name" style="flex:1;min-width:140px"><input id="at" placeholder="Time" style="width:100px"><button class="btn" onclick="addCust()">Add</button></div></div>’;
+return h;
+}
+function addSug(si,fl,di) { var l=fl===“onsite”?ON:fl===“offsite”?OFF:ON.concat(OFF); if(!S.acts[di])S.acts[di]={day:DAYS[di],items:[]}; S.acts[di].items.push({n:l[si].n,t:l[si].d,v:[]}); save(); render(); }
+function rmAct(di,ai) { S.acts[di].items.splice(ai,1); save(); render(); }
+function togVote(di,ai,f) { var v=S.acts[di].items[ai].v||[],x=v.indexOf(f); x>=0?v.splice(x,1):v.push(f); S.acts[di].items[ai].v=v; save(); render(); }
+function addCust() { var n=document.getElementById(“an”).value.trim(); if(!n)return; var di=+document.getElementById(“ad”).value; if(!S.acts[di])S.acts[di]={day:DAYS[di],items:[]}; S.acts[di].items.push({n:n,t:document.getElementById(“at”).value.trim(),v:[]}); save(); render(); }
+
+// GROCERY
+function vGrocery() {
+var costco=(S.grocItems||[]).filter(function(i){return i.store===“costco”;});
+var safeway=(S.grocItems||[]).filter(function(i){return i.store===“safeway”;});
+var h = ‘<div class="sec-title">Grocery List</div><div class="sec-sub">Shared list for Costco and Safeway</div>’;
+h += ‘<div class="card card-dash"><span class="lbl">+ Add item</span><div class="col" style="margin-top:10px"><div class="row"><select id="gs" style="width:130px"><option value="costco">Costco</option><option value="safeway">Safeway</option></select><input id="gi" placeholder="Item name" style="flex:1;min-width:140px"><input id="gq" placeholder="Qty / notes" style="width:110px"></div><div class="row"><select id="gf2" style="width:170px"><option value="">Added by (optional)</option>’+F.map(function(f){return ‘<option value="'+f+'">’+f+’</option>’;}).join(’’)+’</select><button class="btn" onclick="addGroc()">Add</button></div></div></div>’;
+[[costco,“Costco”,“sc”],[safeway,“Safeway”,“ss”]].forEach(function(arr) {
+var items=arr[0],label=arr[1],cls=arr[2];
+var done=items.filter(function(i){return i.done;}).length;
+h += ‘<div style="display:flex;align-items:center;gap:10px;margin:18px 0 8px"><span class="sbadge '+cls+'">’+label+’</span>’+(items.length?’<span style="font-size:12px;color:var(--sub)">’+done+’/’+items.length+’ checked</span>’:’’)+’</div>’;
+if (!items.length) { h += ‘<div class="card card-empty">No items yet</div>’; return; }
+h += ‘<div class="card">’;
+items.forEach(function(item) {
+var gi=(S.grocItems||[]).indexOf(item);
+h += ‘<div class="gitem"><input type=“checkbox” class=“gcheck” ‘+(item.done?‘checked’:’’)+’ onchange=“toggleGroc(’+gi+’,this.checked)”><div style="flex:1"><div class="'+(item.done?'struck':'')+'">’+esc(item.name)+(item.qty?’ <span style="color:var(--sub);font-size:11px">- ‘+esc(item.qty)+’</span>’:’’)+’</div>’+(item.by?’<div style="font-size:11px;color:var(--sub);margin-top:2px">Added by ‘+item.by+’</div>’:’’)+’</div><button class="xbtn" style="font-size:14px" onclick="rmGroc('+gi+')">x</button></div>’;
+});
+h += ‘</div>’;
+});
+return h;
+}
+function addGroc() { var n=document.getElementById(“gi”).value.trim(); if(!n)return; if(!S.grocItems)S.grocItems=[]; S.grocItems.push({name:n,store:document.getElementById(“gs”).value,qty:document.getElementById(“gq”).value.trim(),by:document.getElementById(“gf2”).value,done:false}); save(); render(); }
+function toggleGroc(gi,v) { S.grocItems[gi].done=v; save(); render(); }
+function rmGroc(gi) { S.grocItems.splice(gi,1); save(); render(); }
+
+// EXPENSES
+function vExps() {
+var exps=S.exps||[], tot=exps.reduce(function(s,e){return s+e.a;},0);
+var bal={}; F.forEach(function(f){bal[f]=0;});
+exps.forEach(function(e) {
+if (e.pp) {
+var totalPpl=e.sp.reduce(function(s,f){return s+FSIZE[f];},0);
+var pp=e.a/totalPpl;
+bal[e.pb]+=e.a;
+e.sp.forEach(function(f){bal[f]-=pp*FSIZE[f];});
+} else {
+var sh=e.a/e.sp.length;
+bal[e.pb]+=e.a;
+e.sp.forEach(function(f){bal[f]-=sh;});
+}
+});
+var h = ‘<div class="sec-title">Shared Expenses</div><div class="sec-sub">Split per person (by headcount) or equally per family</div>’;
+h += ‘<div class="card"><div class="btwn" style="margin-bottom:6px"><div style="font-weight:700;font-size:15px">Balance Summary</div><div class="bigtotal">$’+tot.toFixed(2)+’</div></div>’;
+h += ‘<div style="font-size:12px;color:var(--sub);margin-bottom:12px">’+FTOTAL+’ people across ‘+F.length+’ families</div><div class="bgrid">’;
+F.forEach(function(f,i) {
+var b=bal[f]||0, pp=b/FSIZE[f];
+h += ‘<div class="bcard"><div style="font-size:11px;font-weight:700;color:'+CO[i]+'">’+f+’</div>’;
+h += ‘<div style="font-size:10px;color:var(--sub);margin-bottom:2px">’+FSIZE[f]+’ people</div>’;
+h += ‘<div class=“bamt ‘+(b>0.01?“green”:b<-0.01?“red”:“gray”)+’”>’+(b>0.01?”+”:””)+”$”+Math.abs(b).toFixed(2)+’</div>’;
+h += ‘<div style="font-size:10px;color:var(--sub)">’+(b>0.01?“gets back”:b<-0.01?“owes”:“settled”)+’</div>’;
+h += (Math.abs(pp)>0.01?’<div style="font-size:10px;color:var(--sub2)">$’+Math.abs(pp).toFixed(2)+’/person</div>’:’’);
+h += ‘</div>’;
+});
+h += ‘</div></div>’;
+if (!exps.length) h += ‘<div class="card card-empty">No expenses yet</div>’;
+exps.forEach(function(e,ei) {
+var totalPpl=e.sp.reduce(function(s,f){return s+FSIZE[f];},0);
+var splitLine=e.pp
+? ‘Per person - $’+(e.a/totalPpl).toFixed(2)+’/person: ‘+e.sp.map(function(f){return f+’ $’+(e.a/totalPpl*FSIZE[f]).toFixed(2);}).join(’, ‘)
+: ‘Per family equally - $’+(e.a/e.sp.length).toFixed(2)+’ each’;
+h += ‘<div class="card"><div class="btwn"><div><div style="font-weight:700;font-size:15px">’+esc(e.d)+’</div><div style="margin-top:4px">Paid by ‘+badge(e.pb,true)+’</div><div style="font-size:11px;color:var(--sub);margin-top:5px;line-height:1.6">’+splitLine+’</div></div><div style="display:flex;align-items:center;gap:8px"><div class="eamt">$’+e.a.toFixed(2)+’</div><button class="xbtn" onclick="rmExp('+ei+')">x</button></div></div></div>’;
+});
+
+// Add form
+h += ‘<div class="card card-dash"><span class="lbl">+ Add expense</span><div class="col" style="margin-top:12px">’;
+h += ‘<div class="row"><input id="ed" placeholder="What was it for?" style="flex:1;min-width:150px"><input id="ea" type="number" placeholder="$ Amount" style="width:110px"></div>’;
+h += ‘<div class="row"><span class="lbl" style="white-space:nowrap;margin-bottom:0">Paid by:</span><select id="ep" style="width:200px">’+F.map(function(f){return ‘<option value="'+f+'">’+f+’ (’+FSIZE[f]+‘p)</option>’;}).join(’’)+’</select></div>’;
+h += ‘<div><span class="lbl">Split method:</span><div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">’;
+h += ‘<button class=“filt ‘+(newExpPP?“on”:””)+’” onclick=“newExpPP=true;render()”>Per person (by headcount)</button>’;
+h += ‘<button class=“filt ‘+(!newExpPP?“on”:””)+’” onclick=“newExpPP=false;render()”>Per family (equal)</button>’;
+h += ‘</div><div style="font-size:11px;color:var(--sub);margin-top:6px;padding:6px 10px;background:var(--card2);border-radius:8px">’;
+h += newExpPP
+? ‘Cost divided by ‘+newExpSplit.reduce(function(s,f){return s+FSIZE[f];},0)+’ people - larger families pay more’
+: ‘Cost divided equally among ‘+newExpSplit.length+’ families’;
+h += ‘</div></div>’;
+h += ‘<div><span class="lbl">Split among:</span><div class="toggles">’;
+F.forEach(function(f,i){ var on=newExpSplit.indexOf(f)>=0; h += ‘<button class=“tog sm ‘+(on?“on”:””)+’” style=”’+(on?“background:”+CO[i]+”;border-color:”+CO[i]:””)+’” onclick=“togExpSplit('’+f+’')”>’+( on?”✓ “:””)+f+’ <span style="opacity:.7;font-size:10px">’+FSIZE[f]+‘p</span></button>’; });
+h += ‘</div></div>’;
+h += ‘<button class="btn" style="align-self:flex-start;margin-top:4px" onclick="addExp()">Add Expense</button>’;
+h += ‘</div></div>’;
+return h;
+}
+function togExpSplit(f) { var x=newExpSplit.indexOf(f); x>=0?newExpSplit.splice(x,1):newExpSplit.push(f); render(); }
+function rmExp(i) { S.exps.splice(i,1); save(); render(); }
+function addExp() {
+var d=document.getElementById(“ed”).value.trim(), a=parseFloat(document.getElementById(“ea”).value);
+if(!d||isNaN(a))return;
+if(!S.exps)S.exps=[];
+S.exps.push({d:d,a:a,pb:document.getElementById(“ep”).value,sp:newExpSplit.slice(),pp:newExpPP});
+newExpSplit=F.slice(); newExpPP=true; save(); render();
+}
+</script>
+
+</body>
+</html>
